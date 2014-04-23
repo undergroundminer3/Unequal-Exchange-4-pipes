@@ -26,6 +26,7 @@ import io.netty.buffer.ByteBuf;
 
 import java.io.IOException;
 
+import me.undergroundminer3.uee4.config.ExplodeUtil;
 import me.undergroundminer3.uee4.emc1transport.Emc1Handler;
 import me.undergroundminer3.uee4.emc1transport.Emc1Handler.Emc1Receiver;
 import me.undergroundminer3.uee4.emc1transport.IEmc1Emitter;
@@ -55,7 +56,7 @@ public class TileAirConsumer extends TileBuildCraft implements IMachine, IPowerR
 	}
 
 	private void initPowerProvider() {
-		emc1Handler.configure(2, 30, 10, 200);
+		emc1Handler.configure(1, 150, Double.POSITIVE_INFINITY, 1500);
 		emc1Handler.configureEmc1Perdition(10, 5);
 	}
 	
@@ -76,9 +77,9 @@ public class TileAirConsumer extends TileBuildCraft implements IMachine, IPowerR
 		return EmcPipeUtil.getPowerReceiver(tile, side.getOpposite()) != null;
 	}
 	
-	private double getPowerToExtract() {
-		TileEntity tile = getTileBuffer(ForgeDirection.UP).getTile();
-		PowerReceiver receptor = EmcPipeUtil.getPowerReceiver(tile, ForgeDirection.UP.getOpposite());
+	private double getPowerToExtract(final ForgeDirection direction) {
+		TileEntity tile = getTileBuffer(direction).getTile();
+		PowerReceiver receptor = EmcPipeUtil.getPowerReceiver(tile, direction);
 		return extractEnergy(receptor.getMinEnergyReceived(), receptor.getMaxEnergyReceived(), false); // Comment out for constant power
 //		return extractEnergy(0, getActualOutput(), false); // Uncomment for constant power
 	}
@@ -130,14 +131,43 @@ public class TileAirConsumer extends TileBuildCraft implements IMachine, IPowerR
 	}
 	
 	private void sendPower() {
-		TileEntity tile = getTileBuffer(ForgeDirection.UP).getTile();
-		if (isPoweredTile(tile, ForgeDirection.UP)) {
-			PowerReceiver receptor = EmcPipeUtil.getPowerReceiver(tile, ForgeDirection.UP.getOpposite());
+		
+		byte gratesBlocked = 0;
 
-			double extracted = getPowerToExtract();
+		if (this.worldObj.getBlock(xCoord, yCoord + 1, zCoord).isOpaqueCube()) gratesBlocked++;
+		if (this.worldObj.getBlock(xCoord, yCoord - 1, zCoord).isOpaqueCube()) gratesBlocked++;
+
+		//if it cant expel air properly, waste some power
+		if (gratesBlocked == 1) {
+			energy *= 0.25;
+		}
+
+		//blow up like a baloon
+		if (gratesBlocked >= 2) {
+			ExplodeUtil.blowUp(this.worldObj, xCoord, yCoord, zCoord, 7.0F);
+		} else {
+
+			sendPower(ForgeDirection.UP);
+			sendPower(ForgeDirection.DOWN);
+
+			sendPower(ForgeDirection.NORTH);
+			sendPower(ForgeDirection.SOUTH);
+			sendPower(ForgeDirection.EAST);
+			sendPower(ForgeDirection.WEST);
+
+		}
+		
+	}
+	
+	private void sendPower(final ForgeDirection direction) {
+		TileEntity tile = getTileBuffer(direction).getTile();
+		if (isPoweredTile(tile, direction)) {
+			PowerReceiver receptor = EmcPipeUtil.getPowerReceiver(tile, direction.getOpposite());
+
+			double extracted = getPowerToExtract(direction);
 			if (extracted > 0) {
-				double needed = receptor.receiveEnergy(PowerHandler.Type.ENGINE, extracted, ForgeDirection.UP.getOpposite());
-				extractEnergy(receptor.getMinEnergyReceived(), needed, true); // Comment out for constant power
+				double needed = receptor.receiveEnergy(PowerHandler.Type.ENGINE, extracted, direction.getOpposite());
+//				extractEnergy(receptor.getMinEnergyReceived(), needed, true); // Comment out for constant power
 //				currentOutput = extractEnergy(0, needed, true); // Uncomment for constant power
 			}
 		}
@@ -160,7 +190,7 @@ public class TileAirConsumer extends TileBuildCraft implements IMachine, IPowerR
 		if (emc1Handler.getEmc1Stored() > 10) {
 			double power = emc1Handler.getEmc1Stored();
 			power = emc1Handler.useEmc1(power, power, true);
-			energy = power;
+			energy += power;
 			sendPower();
 		}
 

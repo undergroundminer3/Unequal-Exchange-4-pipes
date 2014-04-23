@@ -12,6 +12,10 @@ public final class Config {
 	private static boolean loaded = false;
 
 	public static boolean allowCheats = false;
+	public static boolean safeMachines = false;
+	public static boolean machineExplosions = true;
+	public static boolean explosionsIgnorePeaceful = true;
+	public static boolean difficultyAffectsExplosionSize = true;
 
 	public static void load(final File file) {
 		if (loaded) return;
@@ -43,7 +47,12 @@ public final class Config {
 		config.load();
 
 		allowCheats = config.get("misc", "allowModCheats", false, "Determines if energy conversion mods will be allowed.").getBoolean(false);
-
+		safeMachines = config.get("difficulty", "safeMachines", false, "Determines if machines will stop working if they encounter trouble").getBoolean(false);
+		machineExplosions = config.get("difficulty", "machineExplosions", true, "Determines if machines will EXPLODE VIOLENTLY working if they encounter trouble").getBoolean(true);
+		explosionsIgnorePeaceful = config.get("difficulty", "explosionsIgnorePeaceful", true, "If set to false, machines wont explode in peaceful mode.").getBoolean(true);
+		difficultyAffectsExplosionSize = config.get("difficulty", "explsionsCheckDifficulty", true, "Machines will explode 1/2 hard in easy, 1x in normal, and 2x in hard.").getBoolean(true);
+		
+		
 		config.save();
 	}
 }

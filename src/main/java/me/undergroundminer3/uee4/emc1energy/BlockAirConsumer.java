@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Random;
 
 import me.undergroundminer3.uee4.creativetab.CreativeTab;
+import me.undergroundminer3.uee4.reference.Textures;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IIconRegister;
@@ -44,32 +45,48 @@ public class BlockAirConsumer extends BlockBuildCraft {
 		return true;
 	}
 
+	protected String getUnwrappedUnlocalizedName(String unlocalizedName)
+	{
+		return unlocalizedName.substring(unlocalizedName.indexOf(".") + 1);
+	}
+
+	@Override
+	public String getUnlocalizedName()
+	{
+		return String.format("tile.%s%s", Textures.RESOURCE_PREFIX, getUnwrappedUnlocalizedName(super.getUnlocalizedName()));
+	}
+
+	private IIcon grateIcon;
+	private IIcon gearIcon;
+
 	@Override
 	@SideOnly(Side.CLIENT)
-	public void registerBlockIcons(IIconRegister par1IconRegister) {
+	public void registerBlockIcons(IIconRegister register) {
+		grateIcon = register.registerIcon(String.format("%s", getUnwrappedUnlocalizedName(this.getUnlocalizedName())+"_grate"));
+		gearIcon = register.registerIcon(String.format("%s", getUnwrappedUnlocalizedName(this.getUnlocalizedName())+"_gear"));
 	}
 
 	@Override
 	public int getRenderType() {
-//		return BuildCraftCore.blockByEntityModel;
+		//		return BuildCraftCore.blockByEntityModel;
 		return super.getRenderType();
 	}
 
 	@Override
 	public TileEntity createTileEntity(World world, int metadata) {
-//		if (metadata == 1)
-			return new TileAirConsumer();
-//		else if (metadata == 2)
-//			return new TileEngineIron();
-//		else
-//			return new TileEngineWood();
+		//		if (metadata == 1)
+		return new TileAirConsumer();
+		//		else if (metadata == 2)
+		//			return new TileEngineIron();
+		//		else
+		//			return new TileEngineWood();
 	}
 
 	@Override
 	public boolean isSideSolid(IBlockAccess world, int x, int y, int z, ForgeDirection side) {
 		TileEntity tile = world.getTileEntity(x, y, z);
 		if (tile instanceof TileAirConsumer) {
-//			return ((TileAirConsumer) tile).orientation.getOpposite() == side;
+			//			return ((TileAirConsumer) tile).orientation.getOpposite() == side;
 			return true;
 		}
 		return false;
@@ -79,7 +96,7 @@ public class BlockAirConsumer extends BlockBuildCraft {
 	public boolean rotateBlock(World world, int x, int y, int z, ForgeDirection axis) {
 		TileEntity tile = world.getTileEntity(x, y, z);
 		if (tile instanceof TileAirConsumer) {
-//			return ((TileEngine) tile).switchOrientation(false);
+			//			return ((TileEngine) tile).switchOrientation(false);
 			return false;
 		}
 		return false;
@@ -102,7 +119,7 @@ public class BlockAirConsumer extends BlockBuildCraft {
 		}
 
 		if (tile instanceof TileAirConsumer) {
-//			return ((TileAirConsumer) tile).onBlockActivated(player, ForgeDirection.getOrientation(side));
+			//			return ((TileAirConsumer) tile).onBlockActivated(player, ForgeDirection.getOrientation(side));
 			return false;
 		}
 
@@ -112,9 +129,9 @@ public class BlockAirConsumer extends BlockBuildCraft {
 	@Override
 	public void onPostBlockPlaced(World world, int x, int y, int z, int par5) {
 		TileAirConsumer tile = (TileAirConsumer) world.getTileEntity(x, y, z);
-//		tile.orientation = ForgeDirection.UP;
-//		if (!tile.isOrientationValid())
-//			tile.switchOrientation(true);
+		//		tile.orientation = ForgeDirection.UP;
+		//		if (!tile.isOrientationValid())
+		//			tile.switchOrientation(true);
 	}
 
 	@Override
@@ -125,29 +142,29 @@ public class BlockAirConsumer extends BlockBuildCraft {
 	@SuppressWarnings({"all"})
 	@Override
 	public void randomDisplayTick(World world, int i, int j, int k, Random random) {
-//		TileEngine tile = (TileEngine) world.getTileEntity(i, j, k);
-//
-//		if (!tile.isBurning())
-//			return;
-//
-//		float f = (float) i + 0.5F;
-//		float f1 = (float) j + 0.0F + (random.nextFloat() * 6F) / 16F;
-//		float f2 = (float) k + 0.5F;
-//		float f3 = 0.52F;
-//		float f4 = random.nextFloat() * 0.6F - 0.3F;
-//
-//		world.spawnParticle("reddust", f - f3, f1, f2 + f4, 0.0D, 0.0D, 0.0D);
-//		world.spawnParticle("reddust", f + f3, f1, f2 + f4, 0.0D, 0.0D, 0.0D);
-//		world.spawnParticle("reddust", f + f4, f1, f2 - f3, 0.0D, 0.0D, 0.0D);
-//		world.spawnParticle("reddust", f + f4, f1, f2 + f3, 0.0D, 0.0D, 0.0D);
+		//		TileEngine tile = (TileEngine) world.getTileEntity(i, j, k);
+		//
+		//		if (!tile.isBurning())
+		//			return;
+		//
+		//		float f = (float) i + 0.5F;
+		//		float f1 = (float) j + 0.0F + (random.nextFloat() * 6F) / 16F;
+		//		float f2 = (float) k + 0.5F;
+		//		float f3 = 0.52F;
+		//		float f4 = random.nextFloat() * 0.6F - 0.3F;
+		//
+		//		world.spawnParticle("reddust", f - f3, f1, f2 + f4, 0.0D, 0.0D, 0.0D);
+		//		world.spawnParticle("reddust", f + f3, f1, f2 + f4, 0.0D, 0.0D, 0.0D);
+		//		world.spawnParticle("reddust", f + f4, f1, f2 - f3, 0.0D, 0.0D, 0.0D);
+		//		world.spawnParticle("reddust", f + f4, f1, f2 + f3, 0.0D, 0.0D, 0.0D);
 	}
 
 	@SuppressWarnings({"unchecked", "rawtypes"})
 	@Override
 	public void getSubBlocks(Item item, CreativeTabs par2CreativeTabs, List itemList) {
-//		itemList.add(new ItemStack(this, 1, 0));
-//		itemList.add(new ItemStack(this, 1, 1));
-//		itemList.add(new ItemStack(this, 1, 2));
+		//		itemList.add(new ItemStack(this, 1, 0));
+		//		itemList.add(new ItemStack(this, 1, 1));
+		//		itemList.add(new ItemStack(this, 1, 2));
 	}
 
 	@Override
@@ -155,28 +172,36 @@ public class BlockAirConsumer extends BlockBuildCraft {
 		TileAirConsumer tile = (TileAirConsumer) world.getTileEntity(x, y, z);
 
 		if (tile != null) {
-//			tile.checkRedstonePower();
+			//			tile.checkRedstonePower();
 		}
 	}
 
 	@Override
 	@SideOnly(Side.CLIENT)
 	public IIcon getIcon(int side, int meta) {
-		switch (meta) {
-//			case 0:
-//				return woodTexture;
-//			case 1:
-//				return stoneTexture;
-//			case 2:
-//				return ironTexture;
-			default:
-				return null;
+		//		return grateIcon;
+		//		switch (meta) {
+		////			case 0:
+		////				return woodTexture;
+		////			case 1:
+		////				return stoneTexture;
+		////			case 2:
+		////				return ironTexture;
+		////			default:
+		////				return null;
+		//		}
+		switch (side) {
+		case 0:
+		case 1:
+			return grateIcon;
+		default:
+			return gearIcon;
 		}
 	}
 
 	@Override
 	public TileEntity createNewTileEntity(World world, int metadata) {
-//		return new TileAirConsumer();
+		//		return new TileAirConsumer();
 		return null;
 	}
 }

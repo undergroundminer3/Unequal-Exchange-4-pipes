@@ -27,6 +27,7 @@ import io.netty.buffer.ByteBuf;
 
 import java.io.IOException;
 
+import me.undergroundminer3.uee4.config.ExplodeUtil;
 import me.undergroundminer3.uee4.emc1transport.Emc1Handler;
 import me.undergroundminer3.uee4.emc1transport.Emc1Handler.Emc1Receiver;
 import me.undergroundminer3.uee4.emc1transport.IEmc1Emitter;
@@ -47,43 +48,43 @@ public class TileAirProducer extends TileBuildCraft implements IMachine, IEmc1Re
 	private boolean powered = false;
 
 	public TileAirProducer() {
-//		powerHandler = new PowerHandler(this, PowerHandler.Type.ENGINE);
+		//		powerHandler = new PowerHandler(this, PowerHandler.Type.ENGINE);
 		powerHandler = new PowerHandler(this, PowerHandler.Type.MACHINE);
-//		emc1Handler = new Emc1Handler(this, Emc1Handler.Type.MACHINE);
+		//		emc1Handler = new Emc1Handler(this, Emc1Handler.Type.MACHINE);
 		emc1Handler = new Emc1Handler(this, Emc1Handler.Type.ENGINE);
 		initPowerProvider();
 		initEmc1Provider();
 	}
 
 	private void initPowerProvider() {
-		powerHandler.configure(2, 30, 10, 200);
+		powerHandler.configure(1, 150, Double.POSITIVE_INFINITY, 1500);
 		powerHandler.configurePowerPerdition(10, 5);
 	}
-	
+
 	private void initEmc1Provider() {
 		emc1Handler.configureEmc1Perdition(1, 100);
 	}
-	
+
 	public TileBuffer getTileBuffer(ForgeDirection side) {
 		if (tileCache == null) {
 			tileCache = TileBuffer.makeBuffer(worldObj, xCoord, yCoord, zCoord, false);
 		}
-		
+
 		return tileCache[side.ordinal()];
 	}
 	private TileBuffer[] tileCache;
-	
+
 	public boolean isPoweredTile(TileEntity tile, ForgeDirection side) {
 		return EmcPipeUtil.getEmc1Receiver(tile, side.getOpposite()) != null;
 	}
-	
-	private double getEmc1ToExtract() {
-		TileEntity tile = getTileBuffer(ForgeDirection.UP).getTile();
-		Emc1Receiver receptor = EmcPipeUtil.getEmc1Receiver(tile, ForgeDirection.UP.getOpposite());
+
+	private double getEmc1ToExtract(final ForgeDirection direction) {
+		TileEntity tile = getTileBuffer(direction).getTile();
+		Emc1Receiver receptor = EmcPipeUtil.getEmc1Receiver(tile, direction);
 		return extractEnergy(receptor.getMinEmc1Received(), receptor.getMaxEmc1Received(), false); // Comment out for constant power
-//		return extractEnergy(0, getActualOutput(), false); // Uncomment for constant power
+		//		return extractEnergy(0, getActualOutput(), false); // Uncomment for constant power
 	}
-	
+
 	public double maxEnergyReceived() {
 		return 2000;
 	}
@@ -91,9 +92,9 @@ public class TileAirProducer extends TileBuildCraft implements IMachine, IEmc1Re
 	public double maxEnergyExtracted() {
 		return 500;
 	}
-	
+
 	public double energy;
-	
+
 	public double extractEnergy(double min, double max, boolean doExtract) {
 		if (energy < min) {
 			return 0;
@@ -115,13 +116,13 @@ public class TileAirProducer extends TileBuildCraft implements IMachine, IEmc1Re
 
 		if (energy >= actualMax) {
 			extracted = actualMax;
-			
+
 			if (doExtract) {
 				energy -= actualMax;
 			}
 		} else {
 			extracted = energy;
-			
+
 			if (doExtract) {
 				energy = 0;
 			}
@@ -129,17 +130,48 @@ public class TileAirProducer extends TileBuildCraft implements IMachine, IEmc1Re
 
 		return extracted;
 	}
-	
-	private void sendPower() {
-		TileEntity tile = getTileBuffer(ForgeDirection.UP).getTile();
-		if (isPoweredTile(tile, ForgeDirection.UP)) {
-			Emc1Receiver receptor = EmcPipeUtil.getEmc1Receiver(tile, ForgeDirection.UP.getOpposite());
 
-			double extracted = getEmc1ToExtract();
+	private void sendPower() {
+
+		byte fansBlocked = 0;
+
+		if (this.worldObj.getBlock(xCoord, yCoord + 1, zCoord).isOpaqueCube()) fansBlocked++;
+		if (this.worldObj.getBlock(xCoord, yCoord - 1, zCoord).isOpaqueCube()) fansBlocked++;
+
+		//if it cant suck air properly, waste some power
+		if (fansBlocked == 1) {
+			energy *= 0.25;
+		}
+
+		//blow up like an air compressor
+		if (fansBlocked >= 2) {
+			ExplodeUtil.blowUp(this.worldObj, xCoord, yCoord, zCoord, 7.0F);
+		} else {
+
+			sendPower(ForgeDirection.UP);
+			sendPower(ForgeDirection.DOWN);
+
+			sendPower(ForgeDirection.NORTH);
+			sendPower(ForgeDirection.SOUTH);
+			sendPower(ForgeDirection.EAST);
+			sendPower(ForgeDirection.WEST);
+
+		}
+
+
+	}
+
+	private void sendPower(final ForgeDirection direction) {
+		TileEntity tile = getTileBuffer(direction).getTile();
+		if (isPoweredTile(tile, direction)) {
+			Emc1Receiver receptor = EmcPipeUtil.getEmc1Receiver(tile, direction.getOpposite());
+
+			double extracted = getEmc1ToExtract(direction);
 			if (extracted > 0) {
-				double needed = receptor.receiveEmc1(Emc1Handler.Type.ENGINE, extracted, ForgeDirection.UP.getOpposite());
-				extractEnergy(receptor.getMinEmc1Received(), needed, true); // Comment out for constant power
-//				currentOutput = extractEnergy(0, needed, true); // Uncomment for constant power
+				double needed = receptor.receiveEmc1(Emc1Handler.Type.ENGINE, extracted, direction.getOpposite());
+//				System.out.println(needed);
+//				extractEnergy(receptor.getMinEmc1Received(), needed, true); // Comment out for constant power
+				//				currentOutput = extractEnergy(0, needed, true); // Uncomment for constant power
 			}
 		}
 	}
@@ -151,7 +183,7 @@ public class TileAirProducer extends TileBuildCraft implements IMachine, IEmc1Re
 		if (worldObj.isRemote) {
 			return;
 		}
-		
+
 		if (powered) {
 			return;
 		}
@@ -161,7 +193,7 @@ public class TileAirProducer extends TileBuildCraft implements IMachine, IEmc1Re
 		if (powerHandler.getEnergyStored() > 10) {
 			double power = powerHandler.getEnergyStored();
 			power = powerHandler.useEnergy(power, power, true);
-			energy = power;
+			energy += power;
 			sendPower();
 		}
 
@@ -169,10 +201,10 @@ public class TileAirProducer extends TileBuildCraft implements IMachine, IEmc1Re
 
 	public void onNeighborBlockChange(Block block) {
 		boolean p = worldObj.isBlockIndirectlyGettingPowered(xCoord, yCoord, zCoord);
-		
+
 		if (powered != p) {
 			powered = p;
-			
+
 			if(!worldObj.isRemote) {
 				sendNetworkUpdate();
 			}
@@ -183,7 +215,7 @@ public class TileAirProducer extends TileBuildCraft implements IMachine, IEmc1Re
 		if (tileBuffer == null) {
 			tileBuffer = TileBuffer.makeBuffer(worldObj, xCoord, yCoord, zCoord, false);
 		}
-		
+
 		return tileBuffer[side.ordinal()].getTile();
 	}
 
@@ -209,13 +241,13 @@ public class TileAirProducer extends TileBuildCraft implements IMachine, IEmc1Re
 
 	@Override
 	public boolean isActive() {
-//TODO
+		//TODO
 		return false;
-//		if (next != null) {
-//			return isPumpableFluid(next.x, next.y, next.z);
-//		} else {
-//			return false;
-//		}
+		//		if (next != null) {
+		//			return isPumpableFluid(next.x, next.y, next.z);
+		//		} else {
+		//			return false;
+		//		}
 	}
 
 	@Override
@@ -284,10 +316,10 @@ public class TileAirProducer extends TileBuildCraft implements IMachine, IEmc1Re
 		return false;
 	}
 
-//	@Override
-//	public boolean canEmitPowerFrom(ForgeDirection side) {
-//		return true;
-//	}
+	//	@Override
+	//	public boolean canEmitPowerFrom(ForgeDirection side) {
+	//		return true;
+	//	}
 
 	@Override
 	public Emc1Receiver getEmc1Receiver(ForgeDirection side) {
@@ -300,8 +332,8 @@ public class TileAirProducer extends TileBuildCraft implements IMachine, IEmc1Re
 
 	@Override
 	public boolean canEmitEmc1From(ForgeDirection side) {
-//		// TODO Auto-generated method stub
-//		return false;
+		//		// TODO Auto-generated method stub
+		//		return false;
 		return true;
 	}
 
