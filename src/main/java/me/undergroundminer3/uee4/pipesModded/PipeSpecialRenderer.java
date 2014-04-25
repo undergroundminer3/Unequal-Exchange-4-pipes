@@ -1,4 +1,4 @@
-package me.undergroundminer3.uee4.emctransport;
+package me.undergroundminer3.uee4.pipesModded;
 
 import buildcraft.transport.TileGenericPipe;
 

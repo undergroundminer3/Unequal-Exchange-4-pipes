@@ -12,26 +12,14 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import me.undergroundminer3.uee4.util2.Names2;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.Container;
 import net.minecraft.network.INetHandler;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
-import buildcraft.core.network.BuildCraftChannelHandler;
-import buildcraft.core.network.BuildCraftPacket;
-import buildcraft.core.network.PacketCoordinates;
-import buildcraft.core.network.PacketIds;
-import buildcraft.core.network.PacketSlotChange;
-import buildcraft.core.network.PacketUpdate;
 import buildcraft.core.proxy.CoreProxy;
-import buildcraft.transport.PipeTransportItems;
-import buildcraft.transport.PipeTransportPower;
 import buildcraft.transport.TileGenericPipe;
-import buildcraft.transport.gui.ContainerGateInterface;
-import buildcraft.transport.pipes.PipeItemsDiamond;
-import buildcraft.transport.pipes.PipeItemsEmerald;
 import cpw.mods.fml.common.network.NetworkRegistry;
 
-public class PacketHandlerPipes extends UnequalExchangeChannelHandler {
+public class PacketHandlerPipes extends UEEChannelHandler {
 
 	/**
 	 * TODO: A lot of this is based on the player to retrieve the world.
@@ -40,7 +28,7 @@ public class PacketHandlerPipes extends UnequalExchangeChannelHandler {
 	 * RPCs.
 	 */
 	@Override
-	public void decodeInto(ChannelHandlerContext ctx, ByteBuf data, UEEPacket packet) {
+	public void decodeInto(ChannelHandlerContext ctx, ByteBuf data, UEEPipesPacket packet) {
 		super.decodeInto(ctx, data, packet);
 		try {
 			INetHandler netHandler = ctx.channel().attr(NetworkRegistry.NET_HANDLER).get();
@@ -64,7 +52,9 @@ public class PacketHandlerPipes extends UnequalExchangeChannelHandler {
 	 *
 	 * @param packetPower
 	 */
-	private void onPacketPower(EntityPlayer player, PacketEmcPipeUpdate packetPower) {
+	@Deprecated
+	//please copy this!
+	public void onPacketPower(EntityPlayer player, PacketEmcPipeUpdate packetPower) {
 		World world = player.worldObj;
 		if (!world.blockExists(packetPower.posX, packetPower.posY, packetPower.posZ))
 			return;

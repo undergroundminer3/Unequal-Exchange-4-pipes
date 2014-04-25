@@ -2,3 +2,6 @@
 /build/
 /bin
 /eclipse/
+/.classpath
+/.project
+/.settings/

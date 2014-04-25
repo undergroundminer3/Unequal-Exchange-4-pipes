@@ -10,11 +10,7 @@ package me.undergroundminer3.uee4.network2;
 
 import io.netty.buffer.ByteBuf;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-
-public class PacketCoord extends UEEPacket {
+public class PacketCoord extends UEEPipesPacket {
 
 	private int id;
 
@@ -22,8 +18,7 @@ public class PacketCoord extends UEEPacket {
 	public int posY;
 	public int posZ;
 
-	public PacketCoord() {
-	}
+	public PacketCoord() { }
 
 	public PacketCoord(int id, int x, int y, int z) {
 		this.id = id;

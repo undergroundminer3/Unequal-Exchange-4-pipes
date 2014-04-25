@@ -8,28 +8,24 @@
  */
 package me.undergroundminer3.uee4.emc1energy;
 
-import buildcraft.api.core.SafeTimeTracker;
 import buildcraft.api.gates.IAction;
 import buildcraft.api.power.IPowerEmitter;
 import buildcraft.api.power.IPowerReceptor;
 import buildcraft.api.power.PowerHandler;
 import buildcraft.api.power.PowerHandler.PowerReceiver;
-import buildcraft.api.power.PowerHandler.Type;
 import buildcraft.core.IMachine;
 import buildcraft.core.TileBuffer;
-import buildcraft.core.TileBuildCraft;
 import buildcraft.core.network.PacketPayload;
 import buildcraft.core.network.PacketPayloadStream;
 import buildcraft.core.network.PacketUpdate;
-import buildcraft.core.utils.Utils;
 import io.netty.buffer.ByteBuf;
 
 import java.io.IOException;
 
+import me.undergroundminer3.uee4.abstacts.TileEntityEE_BC;
 import me.undergroundminer3.uee4.config.ExplodeUtil;
 import me.undergroundminer3.uee4.emc1transport.Emc1Handler;
 import me.undergroundminer3.uee4.emc1transport.Emc1Handler.Emc1Receiver;
-import me.undergroundminer3.uee4.emc1transport.IEmc1Emitter;
 import me.undergroundminer3.uee4.emc1transport.IEmc1Receptor;
 import me.undergroundminer3.uee4.emctransport.EmcPipeUtil;
 import net.minecraft.block.Block;
@@ -37,53 +33,54 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
 
-public class TileAirConsumer extends TileBuildCraft implements IMachine, IPowerReceptor, IEmc1Receptor, IPowerEmitter {
+public class TileAirConsumer extends TileEntityEE_BC implements IMachine, IPowerReceptor, IEmc1Receptor, IPowerEmitter {
 
 	private PowerHandler powerHandler;
 	private Emc1Handler emc1Handler;
-	private TileBuffer[] tileBuffer = null;
-	private SafeTimeTracker timer = new SafeTimeTracker();
-	private int tick = Utils.RANDOM.nextInt();
+	//	private TileBuffer[] tileBuffer = null;
+	//	private SafeTimeTracker timer = new SafeTimeTracker();
+	//	private int tick = Utils.RANDOM.nextInt();
 	private boolean powered = false;
 
 	public TileAirConsumer() {
-//		powerHandler = new PowerHandler(this, PowerHandler.Type.MACHINE);
+		//		powerHandler = new PowerHandler(this, PowerHandler.Type.MACHINE);
 		powerHandler = new PowerHandler(this, PowerHandler.Type.ENGINE);
-//		emc1Handler = new Emc1Handler(this, Emc1Handler.Type.ENGINE);
+		//		emc1Handler = new Emc1Handler(this, Emc1Handler.Type.ENGINE);
 		emc1Handler = new Emc1Handler(this, Emc1Handler.Type.MACHINE);
+
 		initPowerProvider();
 		initEmc1Provider();
 	}
 
 	private void initPowerProvider() {
-		emc1Handler.configure(1, 150, Double.POSITIVE_INFINITY, 1500);
+		emc1Handler.configure(1, 150, 300, 1500);
 		emc1Handler.configureEmc1Perdition(10, 5);
 	}
-	
+
 	private void initEmc1Provider() {
 		powerHandler.configurePowerPerdition(1, 100);
 	}
-	
-	public TileBuffer getTileBuffer(ForgeDirection side) {
+
+	public TileBuffer getTileBuffer(final ForgeDirection side) {
 		if (tileCache == null) {
 			tileCache = TileBuffer.makeBuffer(worldObj, xCoord, yCoord, zCoord, false);
 		}
-		
+
 		return tileCache[side.ordinal()];
 	}
 	private TileBuffer[] tileCache;
-	
-	public boolean isPoweredTile(TileEntity tile, ForgeDirection side) {
+
+	public boolean isPoweredTile(final TileEntity tile, final ForgeDirection side) {
 		return EmcPipeUtil.getPowerReceiver(tile, side.getOpposite()) != null;
 	}
-	
+
 	private double getPowerToExtract(final ForgeDirection direction) {
 		TileEntity tile = getTileBuffer(direction).getTile();
 		PowerReceiver receptor = EmcPipeUtil.getPowerReceiver(tile, direction);
 		return extractEnergy(receptor.getMinEnergyReceived(), receptor.getMaxEnergyReceived(), false); // Comment out for constant power
-//		return extractEnergy(0, getActualOutput(), false); // Uncomment for constant power
+		//		return extractEnergy(0, getActualOutput(), false); // Uncomment for constant power
 	}
-	
+
 	public double maxEnergyReceived() {
 		return 2000;
 	}
@@ -91,10 +88,10 @@ public class TileAirConsumer extends TileBuildCraft implements IMachine, IPowerR
 	public double maxEnergyExtracted() {
 		return 500;
 	}
-	
+
 	public double energy;
-	
-	public double extractEnergy(double min, double max, boolean doExtract) {
+
+	public double extractEnergy(final double min, final double max, final boolean doExtract) {
 		if (energy < min) {
 			return 0;
 		}
@@ -115,13 +112,13 @@ public class TileAirConsumer extends TileBuildCraft implements IMachine, IPowerR
 
 		if (energy >= actualMax) {
 			extracted = actualMax;
-			
+
 			if (doExtract) {
 				energy -= actualMax;
 			}
 		} else {
 			extracted = energy;
-			
+
 			if (doExtract) {
 				energy = 0;
 			}
@@ -129,9 +126,9 @@ public class TileAirConsumer extends TileBuildCraft implements IMachine, IPowerR
 
 		return extracted;
 	}
-	
+
 	private void sendPower() {
-		
+
 		byte gratesBlocked = 0;
 
 		if (this.worldObj.getBlock(xCoord, yCoord + 1, zCoord).isOpaqueCube()) gratesBlocked++;
@@ -156,9 +153,9 @@ public class TileAirConsumer extends TileBuildCraft implements IMachine, IPowerR
 			sendPower(ForgeDirection.WEST);
 
 		}
-		
+
 	}
-	
+
 	private void sendPower(final ForgeDirection direction) {
 		TileEntity tile = getTileBuffer(direction).getTile();
 		if (isPoweredTile(tile, direction)) {
@@ -166,9 +163,10 @@ public class TileAirConsumer extends TileBuildCraft implements IMachine, IPowerR
 
 			double extracted = getPowerToExtract(direction);
 			if (extracted > 0) {
-				double needed = receptor.receiveEnergy(PowerHandler.Type.ENGINE, extracted, direction.getOpposite());
-//				extractEnergy(receptor.getMinEnergyReceived(), needed, true); // Comment out for constant power
-//				currentOutput = extractEnergy(0, needed, true); // Uncomment for constant power
+				//				double needed = 
+				receptor.receiveEnergy(PowerHandler.Type.ENGINE, extracted, direction.getOpposite());
+				//				extractEnergy(receptor.getMinEnergyReceived(), needed, true); // Comment out for constant power
+				//				currentOutput = extractEnergy(0, needed, true); // Uncomment for constant power
 			}
 		}
 	}
@@ -180,80 +178,86 @@ public class TileAirConsumer extends TileBuildCraft implements IMachine, IPowerR
 		if (worldObj.isRemote) {
 			return;
 		}
-		
+
 		if (powered) {
 			return;
 		}
 
-		tick++;
+		//		tick++;
 
-		if (emc1Handler.getEmc1Stored() > 10) {
-			double power = emc1Handler.getEmc1Stored();
-			power = emc1Handler.useEmc1(power, power, true);
-			energy += power;
+
+		double power = emc1Handler.getEmc1Stored();
+		power = emc1Handler.useEmc1(power, power, true);
+		energy += power;
+		
+		if (energy > 10) {
 			sendPower();
 		}
 
+		emc1Handler.useEmc1(0.0D, 0.25D, true); //waste some
+
 	}
 
-	public void onNeighborBlockChange(Block block) {
+	public void onNeighborBlockChange(final Block block) {
 		boolean p = worldObj.isBlockIndirectlyGettingPowered(xCoord, yCoord, zCoord);
-		
+
 		if (powered != p) {
 			powered = p;
-			
+
 			if(!worldObj.isRemote) {
 				sendNetworkUpdate();
 			}
 		}
 	}
 
-	private TileEntity getTile(ForgeDirection side) {
-		if (tileBuffer == null) {
-			tileBuffer = TileBuffer.makeBuffer(worldObj, xCoord, yCoord, zCoord, false);
-		}
-		
-		return tileBuffer[side.ordinal()].getTile();
-	}
+	//	private TileEntity getTile(ForgeDirection side) {
+	//		if (tileBuffer == null) {
+	//			tileBuffer = TileBuffer.makeBuffer(worldObj, xCoord, yCoord, zCoord, false);
+	//		}
+	//		
+	//		return tileBuffer[side.ordinal()].getTile();
+	//	}
 
 	@Override
-	public void readFromNBT(NBTTagCompound data) {
+	public void readFromNBT(final NBTTagCompound data) {
 		super.readFromNBT(data);
 
 		powerHandler.readFromNBT(data);
 
 		powered = data.getBoolean("powered");
+		energy = data.getDouble("cachedEnergy");
 
 		initPowerProvider();
 	}
 
 	@Override
-	public void writeToNBT(NBTTagCompound data) {
+	public void writeToNBT(final NBTTagCompound data) {
 		super.writeToNBT(data);
 
 		powerHandler.writeToNBT(data);
 
 		data.setBoolean("powered", powered);
+		data.setDouble("cachedEnergy", energy);
 	}
 
 	@Override
 	public boolean isActive() {
-//TODO
+		//TODO
 		return false;
-//		if (next != null) {
-//			return isPumpableFluid(next.x, next.y, next.z);
-//		} else {
-//			return false;
-//		}
+		//		if (next != null) {
+		//			return isPumpableFluid(next.x, next.y, next.z);
+		//		} else {
+		//			return false;
+		//		}
 	}
 
 	@Override
-	public PowerReceiver getPowerReceiver(ForgeDirection side) {
+	public PowerReceiver getPowerReceiver(final ForgeDirection side) {
 		return powerHandler.getPowerReceiver();
 	}
 
 	@Override
-	public void doWork(PowerHandler workProvider) {
+	public void doWork(final PowerHandler workProvider) {
 	}
 
 	@Override
@@ -269,7 +273,7 @@ public class TileAirConsumer extends TileBuildCraft implements IMachine, IPowerR
 	}
 
 	@Override
-	public void handleUpdatePacket(PacketUpdate packet) throws IOException {
+	public void handleUpdatePacket(final PacketUpdate packet) throws IOException {
 		PacketPayloadStream payload = (PacketPayloadStream) packet.payload;
 		ByteBuf data = payload.stream;
 		powered = data.readBoolean();
@@ -277,7 +281,7 @@ public class TileAirConsumer extends TileBuildCraft implements IMachine, IPowerR
 	}
 
 	@Override
-	public void handleDescriptionPacket(PacketUpdate packet) throws IOException {
+	public void handleDescriptionPacket(final PacketUpdate packet) throws IOException {
 		handleUpdatePacket(packet);
 	}
 
@@ -289,13 +293,13 @@ public class TileAirConsumer extends TileBuildCraft implements IMachine, IPowerR
 
 	@Override
 	public void validate() {
-		tileBuffer = null;
+		//		tileBuffer = null;
 		super.validate();
 	}
 
 	@Override
 	public void destroy() {
-		tileBuffer = null;
+		//		tileBuffer = null;
 	}
 
 	@Override
@@ -309,28 +313,28 @@ public class TileAirConsumer extends TileBuildCraft implements IMachine, IPowerR
 	}
 
 	@Override
-	public boolean allowAction(IAction action) {
+	public boolean allowAction(final IAction action) {
 		return false;
 	}
 
-//	@Override
-//	public boolean canEmitEmc1From(ForgeDirection side) {
-//		return true;
-//	}
+	//	@Override
+	//	public boolean canEmitEmc1From(ForgeDirection side) {
+	//		return true;
+	//	}
 
 	@Override
-	public Emc1Receiver getEmc1Receiver(ForgeDirection side) {
+	public Emc1Receiver getEmc1Receiver(final ForgeDirection side) {
 		return emc1Handler.getEmc1Receiver();
 	}
 
 	@Override
-	public void doWork(Emc1Handler workProvider) {
+	public void doWork(final Emc1Handler workProvider) {
 	}
 
 	@Override
-	public boolean canEmitPowerFrom(ForgeDirection side) {
-//		// TODO Auto-generated method stub
-//		return false;
+	public boolean canEmitPowerFrom(final ForgeDirection side) {
+		//		// TODO Auto-generated method stub
+		//		return false;
 		return true;
 	}
 

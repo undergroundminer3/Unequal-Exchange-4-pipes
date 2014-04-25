@@ -12,19 +12,19 @@ import cpw.mods.fml.common.network.FMLIndexedMessageToMessageCodec;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 
-public class UnequalExchangeChannelHandler extends FMLIndexedMessageToMessageCodec<UEEPacket> {
+public class UEEChannelHandler extends FMLIndexedMessageToMessageCodec<UEEPipesPacket> {
 	
-    public UnequalExchangeChannelHandler() {
+    public UEEChannelHandler() {
     	addDiscriminator(0, PacketEmcPipeUpdate.class);
     }
 
     @Override
-    public void encodeInto(ChannelHandlerContext ctx, UEEPacket packet, ByteBuf data) throws Exception {
+    public void encodeInto(ChannelHandlerContext ctx, UEEPipesPacket packet, ByteBuf data) throws Exception {
         packet.writeData(data);
     }
 
     @Override
-    public void decodeInto(ChannelHandlerContext ctx, ByteBuf data, UEEPacket packet) {
+    public void decodeInto(ChannelHandlerContext ctx, ByteBuf data, UEEPipesPacket packet) {
         packet.readData(data);
     }
 }

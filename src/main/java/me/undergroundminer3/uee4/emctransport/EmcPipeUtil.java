@@ -2,7 +2,6 @@ package me.undergroundminer3.uee4.emctransport;
 
 import me.undergroundminer3.uee4.emc1transport.Emc1Handler;
 import me.undergroundminer3.uee4.emc1transport.IEmc1Receptor;
-import me.undergroundminer3.uee4.emc1transport.Emc1Handler.Emc1Receiver;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
 import buildcraft.api.power.IPowerReceptor;
@@ -16,7 +15,7 @@ public final class EmcPipeUtil {
 
 	//MJPIPE
 	
-	public static PowerHandler.PowerReceiver getPowerReceiver(TileEntity tile, ForgeDirection side) {
+	public static PowerHandler.PowerReceiver getPowerReceiver(final TileEntity tile, final ForgeDirection side) {
 		if (tile instanceof IPowerReceptor) {
 			return ((IPowerReceptor) tile).getPowerReceiver(side);
 		} else if (tile instanceof TileGenericPipe) {
@@ -30,7 +29,7 @@ public final class EmcPipeUtil {
 		}
 	}
 
-	public static void doWork(TileEntity tile, PowerHandler workProvider) {
+	public static void doWork(final TileEntity tile, final PowerHandler workProvider) {
 		if (tile instanceof IPowerReceptor) {
 			((IPowerReceptor) tile).doWork(workProvider);
 		} else if (tile instanceof TileGenericPipe) {
@@ -44,7 +43,7 @@ public final class EmcPipeUtil {
 	
 	//EMC1PIPE
 	
-	public static Emc1Handler.Emc1Receiver getEmc1Receiver(TileEntity tile, ForgeDirection side) {
+	public static Emc1Handler.Emc1Receiver getEmc1Receiver(final TileEntity tile, final ForgeDirection side) {
 		if (tile instanceof IEmc1Receptor) {
 			return ((IEmc1Receptor) tile).getEmc1Receiver(side);
 		} else if (tile instanceof TileGenericPipe) {
@@ -58,7 +57,7 @@ public final class EmcPipeUtil {
 		}
 	}
 
-	public static void doWork(TileEntity tile, Emc1Handler workProvider) {
+	public static void doWork(final TileEntity tile, final Emc1Handler workProvider) {
 		if (tile instanceof IEmc1Receptor) {
 			((IEmc1Receptor) tile).doWork(workProvider);
 		} else if (tile instanceof TileGenericPipe) {

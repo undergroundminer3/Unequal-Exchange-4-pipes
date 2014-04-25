@@ -8,10 +8,9 @@
  */
 package me.undergroundminer3.uee4.network2;
 
-import buildcraft.core.DefaultProps;
 import io.netty.buffer.ByteBuf;
 
-public abstract class UEEPacket {
+public abstract class UEEPipesPacket {
 
 	protected boolean isChunkDataPacket = false;
 

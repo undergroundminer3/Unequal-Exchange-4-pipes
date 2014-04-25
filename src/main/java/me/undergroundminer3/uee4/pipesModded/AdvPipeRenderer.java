@@ -6,12 +6,11 @@
  * License 1.0, or MMPL. Please check the contents of the license located in
  * http://www.mod-buildcraft.com/MMPL-1.0.txt
  */
-package me.undergroundminer3.uee4.emctransport;
+package me.undergroundminer3.uee4.pipesModded;
 
 import buildcraft.BuildCraftCore;
 import buildcraft.BuildCraftCore.RenderMode;
 import buildcraft.BuildCraftTransport;
-import buildcraft.api.gates.GateExpansionController;
 import buildcraft.api.gates.IGateExpansion;
 import buildcraft.core.CoreConstants;
 import buildcraft.core.render.RenderEntityBlock;
@@ -29,16 +28,13 @@ import buildcraft.transport.PipeTransportItems;
 import buildcraft.transport.PipeTransportPower;
 import buildcraft.transport.TileGenericPipe;
 import buildcraft.transport.TravelingItem;
-import buildcraft.api.transport.PipeWire;
 
 import com.google.common.collect.Maps;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import me.undergroundminer3.uee4.emc1transport.Emc1PipeRenderer;
-import me.undergroundminer3.uee4.emc1transport.PipeTransportEmc1;
-import net.minecraft.block.Block;
+import me.undergroundminer3.uee4.util2.LogHelper;
 import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.entity.RenderItem;
@@ -51,7 +47,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Timer;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.fluids.Fluid;
@@ -87,6 +82,7 @@ public class AdvPipeRenderer extends TileEntitySpecialRenderer {
 	}
 
 	public AdvPipeRenderer() {
+		//TODO extract to class
 		customRenderItem = new RenderItem() {
 			@Override
 			public boolean shouldBob() {
@@ -202,13 +198,13 @@ public class AdvPipeRenderer extends TileEntitySpecialRenderer {
 
 		return d;
 	}
-	boolean initialized = false;
+	private boolean dpList_power_initialized = false;
 
 	private void initializeDisplayPowerList(World world) {
-		if (initialized)
+		if (dpList_power_initialized)
 			return;
 
-		initialized = true;
+		dpList_power_initialized = true;
 
 		RenderInfo block = new RenderInfo();
 		block.texture = BuildCraftTransport.instance.pipeIconProvider.getIcon(PipeIconProvider.TYPE.Power_Normal.ordinal());
@@ -264,6 +260,10 @@ public class AdvPipeRenderer extends TileEntitySpecialRenderer {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
+	//we know the pipe type is checked.
+	//it's not my fault if a mod decides to break it and makes it not.
+	//besides, if this crashes, they can fix the problem.
 	@Override
 	public void renderTileEntityAt(TileEntity tileentity, double x, double y, double z, float f) {
 		if (BuildCraftCore.render == RenderMode.NoDynamic) {
@@ -303,22 +303,44 @@ public class AdvPipeRenderer extends TileEntitySpecialRenderer {
 		} else {
 			PipeSpecialRenderer render = renderMap.get(pipe.getPipeType());
 			if (render != null) {
-				render.renderPipeInsidesAt(pipe, x, y, z, this);
+				try {
+					render.renderPipeInsidesAt(pipe, x, y, z, this);
+				} catch (final Throwable t) {
+					LogHelper.fatal("Detected an exception while trying to render a pipe!");
+					LogHelper.fatal("This is usually a DEVELOPER error.");
+					LogHelper.fatal("Please report the error to the creator of the following type.");
+					LogHelper.fatal(pipe.getPipeType().toString());
+					LogHelper.fatal(t);
+					
+					LogHelper.fatal("If the above does not contain the word EMC, then please do not report to undergroundminer3");
+					LogHelper.fatal("Make sure the developer knows, this is a MAJOR bug");
+					
+					throw new RuntimeException(t);
+				}
 			}
 		}
 	}
+	
+	//##########################CODE BLOCK
+	//please consider the whole block attempting any modifications
 
 	private static Map<PipeType, PipeSpecialRenderer> renderMap = new HashMap<PipeType, PipeSpecialRenderer>();
 
 	public static void registerRenderer(final PipeType type, final PipeSpecialRenderer renderer) {
+		//TODO logging
 		renderMap.put(type, renderer);
 	}
-
-	static {
-		registerRenderer(EmcPipeTypes.EMC1, new Emc1PipeRenderer() );
+	
+	@SuppressWarnings("unchecked")
+	public static Map<PipeType, PipeSpecialRenderer> getRenderListCloned() {
+		return (Map<PipeType, PipeSpecialRenderer>) ((HashMap<PipeType, PipeSpecialRenderer>) renderMap).clone();
 	}
+	
+	//##########################END CODE BLOCK
 
-	private void renderGatesWires(TileGenericPipe pipe, double x, double y, double z) {
+	@Deprecated
+	//please copy this instead
+	public void renderGatesWires(TileGenericPipe pipe, double x, double y, double z) {
 		PipeRenderState state = pipe.renderState;
 
 		if (state.wireMatrix.hasWire(PipeWire.RED)) {
@@ -342,7 +364,9 @@ public class AdvPipeRenderer extends TileEntitySpecialRenderer {
 		}
 	}
 
-	private void pipeWireRender(TileGenericPipe pipe, float cx, float cy, float cz, PipeWire color, double x, double y, double z) {
+	@Deprecated
+	//please copy this instead
+	public void pipeWireRender(TileGenericPipe pipe, float cx, float cy, float cz, PipeWire color, double x, double y, double z) {
 
 		PipeRenderState state = pipe.renderState;
 
@@ -489,7 +513,9 @@ public class AdvPipeRenderer extends TileEntitySpecialRenderer {
 		GL11.glPopMatrix();
 	}
 
-	private void pipeGateRender(TileGenericPipe pipe, double x, double y, double z) {
+	@Deprecated
+	//please copy this instead
+	public void pipeGateRender(TileGenericPipe pipe, double x, double y, double z) {
 		GL11.glPushMatrix();
 		GL11.glPushAttrib(GL11.GL_ENABLE_BIT);
 		//		GL11.glEnable(GL11.GL_LIGHTING);
@@ -544,7 +570,9 @@ public class AdvPipeRenderer extends TileEntitySpecialRenderer {
 		GL11.glPopMatrix();
 	}
 
-	private void renderGate(TileGenericPipe tile, IIcon icon, int layer, float trim, float translateCenter, float extraDepth) {
+	@Deprecated()
+	//please copy this instead
+	public void renderGate(TileGenericPipe tile, IIcon icon, int layer, float trim, float translateCenter, float extraDepth) {
 		PipeRenderState state = tile.renderState;
 
 		RenderInfo box = new RenderInfo();
@@ -587,7 +615,9 @@ public class AdvPipeRenderer extends TileEntitySpecialRenderer {
 		}				
 	}
 
-	private boolean shouldRenderNormalPipeSide(PipeRenderState state, ForgeDirection direction) {
+	@Deprecated
+	//please copyy this instead
+	public boolean shouldRenderNormalPipeSide(PipeRenderState state, ForgeDirection direction) {
 		return !state.pipeConnectionMatrix.isConnected(direction) && state.facadeMatrix.getFacadeBlock(direction) == null && !state.plugMatrix.isConnected(direction) && !isOpenOrientation(state, direction);
 	}
 
@@ -612,7 +642,9 @@ public class AdvPipeRenderer extends TileEntitySpecialRenderer {
 		return targetOrientation.getOpposite() == direction;
 	}
 
-	private void renderPower(Pipe<PipeTransportPower> pipe, double x, double y, double z) {
+	@Deprecated
+	//please copy this instead
+	public void renderPower(Pipe<PipeTransportPower> pipe, double x, double y, double z) {
 		initializeDisplayPowerList(pipe.container.getWorldObj());
 
 		PipeTransportPower pow = pipe.transport;
@@ -654,7 +686,9 @@ public class AdvPipeRenderer extends TileEntitySpecialRenderer {
 		GL11.glPopMatrix();
 	}
 
-	private void renderFluids(Pipe<PipeTransportFluids> pipe, double x, double y, double z) {
+	@Deprecated
+	//please copy this instead
+	public void renderFluids(Pipe<PipeTransportFluids> pipe, double x, double y, double z) {
 		PipeTransportFluids trans = pipe.transport;
 
 		boolean needsRender = false;
@@ -758,7 +792,9 @@ public class AdvPipeRenderer extends TileEntitySpecialRenderer {
 		GL11.glPopMatrix();
 	}
 
-	private DisplayFluidList getListFromBuffer(FluidStack stack, World world) {
+	@Deprecated
+	//please copy this instead
+	public DisplayFluidList getListFromBuffer(FluidStack stack, World world) {
 
 		int liquidId = stack.fluidID;
 
@@ -768,7 +804,9 @@ public class AdvPipeRenderer extends TileEntitySpecialRenderer {
 		return getDisplayFluidLists(liquidId, world);
 	}
 
-	private void renderSolids(Pipe<PipeTransportItems> pipe, double x, double y, double z) {
+	@Deprecated
+	//please copy this instead
+	public void renderSolids(Pipe<PipeTransportItems> pipe, double x, double y, double z) {
 		GL11.glPushMatrix();
 		GL11.glDisable(2896 /* GL_LIGHTING */);
 

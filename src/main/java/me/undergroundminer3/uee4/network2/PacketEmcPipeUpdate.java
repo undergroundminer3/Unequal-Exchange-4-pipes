@@ -18,8 +18,7 @@ public class PacketEmcPipeUpdate extends PacketCoord {
 	public boolean overload;
 	public short[] displayPower;
 
-	public PacketEmcPipeUpdate() {
-	}
+	public PacketEmcPipeUpdate() { }
 
 	public PacketEmcPipeUpdate(int x, int y, int z) {
 		super(Names2.NETIDS.POWER_UPDATE, x, y, z);

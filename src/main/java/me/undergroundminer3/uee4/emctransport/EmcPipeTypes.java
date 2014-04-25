@@ -1,7 +1,6 @@
 package me.undergroundminer3.uee4.emctransport;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 
 import me.undergroundminer3.uee4.util2.CheatDetector;
 import me.undergroundminer3.uee4.util2.EnumHack;
@@ -25,8 +24,8 @@ public final class EmcPipeTypes {
 	public static PipeType newPipe(final String name) {
 		final int num = numCounter;
 		numCounter++;
-		Constructor[] ctors = PipeType.class.getDeclaredConstructors();
-		Constructor ctor = null;
+		Constructor<?>[] ctors = PipeType.class.getDeclaredConstructors();
+		Constructor<?> ctor = null;
 		PipeType tempInstance = null;
 
 		for (int i = 0; i < ctors.length; i++) {
