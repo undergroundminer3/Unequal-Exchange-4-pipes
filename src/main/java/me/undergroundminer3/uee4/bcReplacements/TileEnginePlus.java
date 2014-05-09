@@ -60,10 +60,16 @@ IStoresCachedEnergy, IBatteryProvider {
 		if (channel.equals(EnergyAPI.batteryChannelMJ)) {
 			return batteryMj;
 		}
+		if (channel.equals(Names2.Energy.CHANNEL_EMCAIR)) {
+			return batteryEmcAir;
+		}
+		//no battery for emcheat
+		//we output heat???
 		return null;
 	}
 
 	private EnergyAPI.BatteryObject batteryMj;
+	private EnergyAPI.BatteryObject batterEmcAir;
 
 	private static class AnoymousBatteryAir {
 		@EnergyBattery(energyChannel = Names2.Energy.CHANNEL_EMCAIR)
@@ -73,6 +79,18 @@ IStoresCachedEnergy, IBatteryProvider {
 	private static class AnoymousBatteryEnergy {
 		@EnergyBattery(energyChannel = EnergyAPI.batteryChannelMJ)
 		double mjStored;
+	}
+	
+	public TileEnginePlus(final int invSize) {
+		this.mjPowerHandler = new PowerHandler(this, Type.ENGINE);
+		this.mjPowerHandler.configurePowerPerdition(1, 100);
+		this.inv = new SimpleInventory(invSize, "EnginePlus", 64);
+
+		this.batteryMj = EnergyAPI.getBattery(new AnoymousBatteryEnergy(), EnergyAPI.batteryChannelMJ);
+		this.batteryMj.reconfigure(0.0D, 0.0D, 0.0D, EnergyAPI.batteryChannelMJ);
+
+		this.batteryEmcAir = EnergyAPI.getBattery(new AnoymousBatteryAir(), Names2.Energy.CHANNEL_EMCAIR);
+		this.batteryEmcAir.reconfigure(0.0D, 0.0D, 0.0D, Names2.Energy.CHANNEL_EMCAIR);
 	}
 
 	@Override
@@ -143,15 +161,6 @@ IStoresCachedEnergy, IBatteryProvider {
 
 	protected double currentGeneration = 4.0D;
 	protected double currentOutputDisplay = 0.0D;
-
-	public TileEnginePlus(final int invSize) {
-		this.mjPowerHandler = new PowerHandler(this, Type.ENGINE);
-		this.mjPowerHandler.configurePowerPerdition(1, 100);
-		this.inv = new SimpleInventory(invSize, "EnginePlus", 64);
-
-		this.batteryMj = EnergyAPI.getBattery(new AnoymousBatteryEnergy(), EnergyAPI.batteryChannelMJ);
-		this.batteryMj.reconfigure(0.0D, 0.0D, 0.0D, EnergyAPI.batteryChannelMJ);
-	}
 
 	@Override
 	public void initialize() {
