@@ -1,7 +1,9 @@
 package me.undergroundminer3.uee4.emctransport;
 
-import me.undergroundminer3.uee4.emc1transport.Emc1Handler;
-import me.undergroundminer3.uee4.emc1transport.IEmc1Receptor;
+import me.undergroundminer3.uee4.emcAirTransport.EmcAirHandler;
+import me.undergroundminer3.uee4.emcAirTransport.IEmcAirReceptor;
+import me.undergroundminer3.uee4.emcHeatTransport.EmcHeatHandler;
+import me.undergroundminer3.uee4.emcHeatTransport.IEmcHeatReceptor;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
 import buildcraft.api.power.IPowerReceptor;
@@ -15,7 +17,7 @@ public final class EmcPipeUtil {
 
 	//MJPIPE
 	
-	public static PowerHandler.PowerReceiver getPowerReceiver(final TileEntity tile, final ForgeDirection side) {
+	public static final PowerHandler.PowerReceiver getPowerReceiver(final TileEntity tile, final ForgeDirection side) {
 		if (tile instanceof IPowerReceptor) {
 			return ((IPowerReceptor) tile).getPowerReceiver(side);
 		} else if (tile instanceof TileGenericPipe) {
@@ -29,7 +31,7 @@ public final class EmcPipeUtil {
 		}
 	}
 
-	public static void doWork(final TileEntity tile, final PowerHandler workProvider) {
+	public static final void doWork(final TileEntity tile, final PowerHandler workProvider) {
 		if (tile instanceof IPowerReceptor) {
 			((IPowerReceptor) tile).doWork(workProvider);
 		} else if (tile instanceof TileGenericPipe) {
@@ -43,13 +45,13 @@ public final class EmcPipeUtil {
 	
 	//EMC1PIPE
 	
-	public static Emc1Handler.Emc1Receiver getEmc1Receiver(final TileEntity tile, final ForgeDirection side) {
-		if (tile instanceof IEmc1Receptor) {
-			return ((IEmc1Receptor) tile).getEmc1Receiver(side);
+	public static final EmcAirHandler.EmcAirReceiver getEmcAirReceiver(final TileEntity tile, final ForgeDirection side) {
+		if (tile instanceof IEmcAirReceptor) {
+			return ((IEmcAirReceptor) tile).getEmcAirReceiver(side);
 		} else if (tile instanceof TileGenericPipe) {
 			TileGenericPipe pipeContainer = (TileGenericPipe) tile;
-			if (BlockGenericPipe.isValid(pipeContainer.pipe) && pipeContainer.pipe instanceof IEmc1Receptor)
-				return ((IEmc1Receptor) pipeContainer.pipe).getEmc1Receiver(null);
+			if (BlockGenericPipe.isValid(pipeContainer.pipe) && pipeContainer.pipe instanceof IEmcAirReceptor)
+				return ((IEmcAirReceptor) pipeContainer.pipe).getEmcAirReceiver(null);
 			else
 				return null;
 		} else {
@@ -57,15 +59,43 @@ public final class EmcPipeUtil {
 		}
 	}
 
-	public static void doWork(final TileEntity tile, final Emc1Handler workProvider) {
-		if (tile instanceof IEmc1Receptor) {
-			((IEmc1Receptor) tile).doWork(workProvider);
+	public static final void doWork(final TileEntity tile, final EmcAirHandler workProvider) {
+		if (tile instanceof IEmcAirReceptor) {
+			((IEmcAirReceptor) tile).doWork(workProvider);
 		} else if (tile instanceof TileGenericPipe) {
 			TileGenericPipe pipeContainer = (TileGenericPipe) tile;
-			if (BlockGenericPipe.isValid(pipeContainer.pipe) && pipeContainer.pipe instanceof IEmc1Receptor)
-				((IEmc1Receptor) pipeContainer.pipe).doWork(workProvider);
+			if (BlockGenericPipe.isValid(pipeContainer.pipe) && pipeContainer.pipe instanceof IEmcAirReceptor)
+				((IEmcAirReceptor) pipeContainer.pipe).doWork(workProvider);
 		} /*else {
 			//do nothing
 		}*/
 	}
+	
+	//EMC2PIPE
+	
+		public static final EmcHeatHandler.EmcHeatReceiver getEmcHeatReceiver(final TileEntity tile, final ForgeDirection side) {
+			if (tile instanceof IEmcHeatReceptor) {
+				return ((IEmcHeatReceptor) tile).getEmcHeatReceiver(side);
+			} else if (tile instanceof TileGenericPipe) {
+				TileGenericPipe pipeContainer = (TileGenericPipe) tile;
+				if (BlockGenericPipe.isValid(pipeContainer.pipe) && pipeContainer.pipe instanceof IEmcHeatReceptor)
+					return ((IEmcHeatReceptor) pipeContainer.pipe).getEmcHeatReceiver(null);
+				else
+					return null;
+			} else {
+				return null;
+			}
+		}
+
+		public static final void doWork(final TileEntity tile, final EmcHeatHandler workProvider) {
+			if (tile instanceof IEmcHeatReceptor) {
+				((IEmcHeatReceptor) tile).doWork(workProvider);
+			} else if (tile instanceof TileGenericPipe) {
+				TileGenericPipe pipeContainer = (TileGenericPipe) tile;
+				if (BlockGenericPipe.isValid(pipeContainer.pipe) && pipeContainer.pipe instanceof IEmcHeatReceptor)
+					((IEmcHeatReceptor) pipeContainer.pipe).doWork(workProvider);
+			} /*else {
+				//do nothing
+			}*/
+		}
 }

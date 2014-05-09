@@ -8,6 +8,7 @@
  */
 package me.undergroundminer3.uee4.network2;
 
+import me.undergroundminer3.uee4.energy.gui.widget.PacketWidget;
 import cpw.mods.fml.common.network.FMLIndexedMessageToMessageCodec;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -15,7 +16,8 @@ import io.netty.channel.ChannelHandlerContext;
 public class UEEChannelHandler extends FMLIndexedMessageToMessageCodec<UEEPipesPacket> {
 	
     public UEEChannelHandler() {
-    	addDiscriminator(0, PacketEmcPipeUpdate.class);
+    	addDiscriminator(1, PacketEmcPipeUpdate.class);
+    	addDiscriminator(2, PacketWidget.class);
     }
 
     @Override

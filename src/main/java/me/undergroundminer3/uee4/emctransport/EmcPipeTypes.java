@@ -11,27 +11,40 @@ public final class EmcPipeTypes {
 
 	private EmcPipeTypes() {};
 
-	public static final PipeType EMC1;
+	public static final PipeType EmcAir;
+	public static final PipeType EmcThermal;
+	public static final PipeType EmcLight;
+	public static final PipeType EmcPotenta = PipeType.POWER;
+	public static final PipeType EmcVoid;
 
-	static {
-		EMC1 = newPipe("EMC1");
-		LogHelper.info("[UEE4] If you get a crash including \"ArrayIndexOutOfBounds\", I probabally caused it.");
-		LogHelper.info("[UEE4] If that happens, remove ALL other BuildCraft addons.");
-	}
+	public static final PipeType EU;
 	
 	private static int numCounter = 4;
 
-	public static PipeType newPipe(final String name) {
+	static {
+		EmcAir = newPipe("EmcAir");
+		EmcThermal = newPipe("EmcThermal");
+		EmcLight = newPipe("EmcLight");
+		EmcVoid = newPipe("EmcVoid");
+
+		EU = newPipe("EU");
+
+		LogHelper.info("[UEE4] If you get a crash including \"ArrayIndexOutOfBounds\", I probabally caused it.");
+		LogHelper.info("[UEE4] If that happens, remove ALL other BuildCraft addons, and yell at UndergroundMiner3.");
+	}
+
+	public static final PipeType newPipe(final String name) {
 		final int num = numCounter;
 		numCounter++;
 		Constructor<?>[] ctors = PipeType.class.getDeclaredConstructors();
 		Constructor<?> ctor = null;
 		PipeType tempInstance = null;
 
-		for (int i = 0; i < ctors.length; i++) {
-			ctor = ctors[i];
-			if (ctor.getGenericParameterTypes().length == 0)
+		for (final Constructor<?> c : ctors) {
+			if (c.getGenericParameterTypes().length == 2) {
+				ctor = c;
 				break;
+			}
 		}
 
 		try {
@@ -42,7 +55,7 @@ public final class EmcPipeTypes {
 			e.printStackTrace();
 			throw new RuntimeException(e);
 		}
-		
+
 		if (tempInstance == null) {
 			CheatDetector.shutdown();
 			(new Throwable("Null enum created! This will be very bad.")).printStackTrace();

@@ -21,12 +21,19 @@ public class EmcPipeIconProvider implements IIconProvider {
 
 	public enum TYPE {
 
-		PipeEmc1Stone("pipeEmc1Stone"),
-		PipeEmc1Cobblestone("pipeEmc1Cobblestone"),
-		PipeEmc1Wood_Standard("pipeEmc1Wood_standard"),
-		PipeEmc1Quartz("pipeEmc1Quartz"),
-		PipeEmc1Diamond("pipeEmc1Diamond"),
-		PipeEmc1Gold("pipeEmc1Gold");
+		PipeAirStone("pipeEmc1Stone"),
+		PipeAirCobblestone("pipeEmc1Cobblestone"),
+		PipeAirWood_Standard("pipeEmc1Wood_standard"),
+		PipeAirQuartz("pipeEmc1Quartz"),
+		PipeAirDiamond("pipeEmc1Diamond"),
+		PipeAirGold("pipeEmc1Gold"),
+		
+		PipeEmcHeatStone("pipeEmc2Stone"),
+		PipeEmcHeatCobblestone("pipeEmc2Cobblestone"),
+		PipeEmcHeatWood_Standard("pipeEmc2Wood_standard"),
+		PipeEmcHeatQuartz("pipeEmc2Quartz"),
+		PipeEmcHeatDiamond("pipeEmc2Diamond"),
+		PipeEmcHeatGold("pipeEmc2Gold");
 		
 		public static final TYPE[] VALUES = values();
 		private final String iconTag;

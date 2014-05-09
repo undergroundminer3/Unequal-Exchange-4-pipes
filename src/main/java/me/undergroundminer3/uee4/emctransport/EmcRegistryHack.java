@@ -4,17 +4,20 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
 import me.undergroundminer3.uee4.util2.CheatDetector;
+import buildcraft.core.CreativeTabBuildCraft;
 import buildcraft.transport.BlockGenericPipe;
 import buildcraft.transport.ItemPipe;
 import buildcraft.transport.Pipe;
 import buildcraft.transport.TransportProxy;
 import cpw.mods.fml.common.registry.GameRegistry;
 
-public class EmcRegistryHack {
+public final class EmcRegistryHack {
 
-	public static ItemPipe registerPipe(Class<? extends Pipe<?>> clas, final String prefix, final String name) {
+	private EmcRegistryHack() {};
+
+	public static final ItemPipe registerPipe(Class<? extends Pipe<?>> clas, final String prefix, final String name) {
 		ItemPipe item = hackPipe();
-		item.setUnlocalizedName("uee4Pipe." + name);
+		item.setUnlocalizedName(prefix + name);
 		GameRegistry.registerItem(item, item.getUnlocalizedName());
 
 		BlockGenericPipe.pipes.put(item, clas);
@@ -26,12 +29,12 @@ public class EmcRegistryHack {
 		}
 		return item;
 	}
-	
-	public static ItemPipe registerPipe(Class<? extends Pipe<?>> clazz, final String name) {
+
+	public static final ItemPipe registerPipe(Class<? extends Pipe<?>> clazz, final String name) {
 		return registerPipe(clazz, "uee4Pipe.", name);
 	}
-	
-	public static ItemPipe hackPipe() {
+
+	public static final ItemPipe hackPipe() {
 		Constructor<?>[] ctors = ItemPipe.class.getDeclaredConstructors();
 		Constructor<?> ctor = null;
 		ItemPipe tempInstance = null;
@@ -44,7 +47,7 @@ public class EmcRegistryHack {
 
 		try {
 			ctor.setAccessible(true);
-			tempInstance = (ItemPipe) ctor.newInstance();
+			tempInstance = (ItemPipe) ctor.newInstance(CreativeTabBuildCraft.PIPES);
 		} catch (final InstantiationException e) {
 			CheatDetector.shutdown();
 			e.printStackTrace();
@@ -58,12 +61,12 @@ public class EmcRegistryHack {
 			CheatDetector.shutdown();
 			e.printStackTrace();
 		}
-		
+
 		if (tempInstance == null) {
 			CheatDetector.shutdown();
 			(new Throwable("Null pipe created! This will be very bad.")).printStackTrace();
 		}
-		
+
 		return tempInstance;
 	}
 }

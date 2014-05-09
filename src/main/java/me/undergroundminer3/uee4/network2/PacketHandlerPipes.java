@@ -40,6 +40,9 @@ public class PacketHandlerPipes extends UEEChannelHandler {
 				case Names2.NETIDS.POWER_UPDATE:
 					onPacketPower(player, (PacketEmcPipeUpdate) packet);
 					break;
+				case Names2.NETIDS.GUI_WIDGET:
+					//read time handled
+					break;
 			}
 
 		} catch (Exception ex) {
