@@ -69,7 +69,7 @@ IStoresCachedEnergy, IBatteryProvider {
 	}
 
 	private EnergyAPI.BatteryObject batteryMj;
-	private EnergyAPI.BatteryObject batterEmcAir;
+	private EnergyAPI.BatteryObject batteryEmcAir;
 
 	private static class AnoymousBatteryAir {
 		@EnergyBattery(energyChannel = Names2.Energy.CHANNEL_EMCAIR)
